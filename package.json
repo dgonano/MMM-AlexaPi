@@ -1,0 +1,22 @@
+{
+  "name": "Magic-Mirror-Module-Display",
+  "version": "1.0.0",
+  "description": "This module for the Magic Mirror allows you to dispaly various items on the screen center.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dgonano/MMM-Display"
+  },
+  "keywords": [
+    "magic mirror",
+    "smart mirror",
+    "module",
+    "control"
+  ],
+  "author": "Dion Gonano",
+  "contributors": "git+https://github.com/dgonano/MMM-Display/graphs/contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "git+https://github.com/dgonano/MMM-Display/issues"
+  },
+  "homepage": "git+https://github.com/dgonano/MMM-Display#readme"
+}
