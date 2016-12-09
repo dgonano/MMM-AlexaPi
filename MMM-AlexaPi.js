@@ -13,7 +13,8 @@ Module.register("MMM-AlexaPi", {
 
 	// Default module config.
 	defaults: {
-			alexaTimeout: 10000
+			alexaTimeout: 30000,
+			alexaHBTimeout: 10000
 	},
 
 	// Define start sequence.
@@ -23,8 +24,9 @@ Module.register("MMM-AlexaPi", {
 		this.settingsVersion = 1;
 
 		this.timeoutID = "";
+		this.HBtimeoutID = "";
 
-		this.avsStatus = "waiting";
+		this.avsStatus = "no_connection";
 	},
 
 	notificationReceived: function(notification, payload, sender) {
@@ -44,6 +46,9 @@ Module.register("MMM-AlexaPi", {
 	// Override socket notification handler.
 	socketNotificationReceived: function(notification, payload) {
 		if (notification === "AVSSTATUS") {
+			//reset heartbeat
+			this.resetHBTimer();
+
 			//record message
 			this.avsStatus = payload.status;
 
@@ -52,35 +57,70 @@ Module.register("MMM-AlexaPi", {
 			clearTimeout(this.timeoutID);
 			this.timeoutID = setTimeout(function() {
 				self.timeoutID = "";
-				self.avsStatus = 'waiting';
+				self.avsStatus = 'idle';
 				self.updateDom();
 			}, this.config.alexaTimeout);
 			//Request update now timeoutID is set
 			this.updateDom();
 		}
+		if (notification === "AVSHB") {
+			this.resetHBTimer();
+			if (this.avsStatus === "no_connection") {
+				this.avsStatus = 'idle';
+				this.updateDom();
+			}
+		}
+	},
+
+	resetHBTimer: function() {
+		var self = this;
+		clearTimeout(this.HBtimeoutID);
+		this.HBtimeoutID = setTimeout(function() {
+			//cancel other timers
+			clearTimeout(self.timeoutID);
+			//do action of HB timout
+			self.HBtimeoutID = "";
+			self.avsStatus = 'no_connection';
+			self.updateDom();
+		}, this.config.alexaHBTimeout);
 	},
 
 	getDom: function() {
 		var wrapper = document.createElement("div");
 		wrapper.className = "normal large light";
 
-		var symbol =  document.createElement("span");
-		symbol.className = "fa fa-microphone";
+		var symbolWrapper =  document.createElement("span");
+		symbolWrapper.className = "fa fa-stack";
 		//Check status
-		if (this.avsStatus === "listening") {
-			symbol.className = "fa fa-microphone";
-			symbol.style = "color:blue";
+		if (this.avsStatus == "idle") {
+			var symbol = document.createElement("i");
+			symbol.className = "fa fa-microphone fa-stack-1x";
+			symbolWrapper.appendChild(symbol);
+		} else if (this.avsStatus === "recording") {
+			// var symbol1 = document.createElement("i");
+			var symbol2 = document.createElement("i");
+			// symbol1.className = "fa fa-microphone fa-stack-1x";
+			symbol2.className = "fa fa-circle-o-notch fa-stack-1x";
+			// symbolWrapper.appendChild(symbol1);
+			symbolWrapper.appendChild(symbol2);
 		} else if (this.avsStatus === "processing") {
-			symbol.className = "fa fa-spinner fa-spin";
-		} else if (this.avsStatus === "speaking") {
-			symbol.className = "fa fa-volume-up";
+			var symbol = document.createElement("i");
+			symbol.className = "fa fa-circle-o-notch fa-spin fa-stack-1x";
+			symbolWrapper.appendChild(symbol);
+		} else if (this.avsStatus === "playback") {
+			var symbol = document.createElement("i");
+			symbol.className = "fa fa-volume-up fa-stack-1x";
+			symbolWrapper.appendChild(symbol);
 		} else if (this.avsStatus === "error") {
-			symbol.className = "fa fa-warning";
-			symbol.style = "color:red";
+			var symbol = document.createElement("i");
+			symbol.className = "fa fa-warning fa-stack-1x";
+			symbolWrapper.appendChild(symbol)
 		} else if (this.avsStatus === "no_connection") {
-			symbol.className = "fa fa-microphone-slash";
+			var symbol = document.createElement("i");
+			symbol.className = "fa fa-microphone-slash fa-stack-1x";
+			symbolWrapper.appendChild(symbol);
 		}
-		wrapper.appendChild(symbol);
+		wrapper.appendChild(symbolWrapper);
 
 		return wrapper;
 	},

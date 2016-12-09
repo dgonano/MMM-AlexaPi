@@ -41,12 +41,16 @@ module.exports = NodeHelper.create({
 	
 	executeQuery: function(query, res) {
 		var self = this;
-		var opts = {timeout: 8000};
 
 		if (query.action === 'AVSSTATUS')
 		{
 			res.send({'status': 'success'});
 			self.sendSocketNotification(query.action, {status: query.status});
+			return true;
+		}
+		if (query.action === 'AVSHB') {
+			res.send({'status': 'success'});
+			self.sendSocketNotification(query.action, {});
 			return true;
 		}
 		return false;
