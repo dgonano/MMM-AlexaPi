@@ -28,6 +28,8 @@ modules: [
 ]
 ````
 
+**Note:** When installing AlexaPi be sure to set the device to `magicmirror` and not `raspberrypi` (or other device)
+
 ## Configuration options
 
 The following properties can be configured:
